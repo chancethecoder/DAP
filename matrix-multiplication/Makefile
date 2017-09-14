@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -W -Wall -std=c99 -pg
-TARGET_CPU_EXAMPLE = cpu_practice
+TARGET_CPU_EXAMPLE = cpu_practice_exe
 OBJECT_CPU_EXAMPLE = matrix_product_practice_cpu.o
 GPROF_OUTPUT = gmon.out
 GPROF_LOG = log.txt
@@ -16,4 +16,4 @@ $(TARGET_CPU_EXAMPLE): $(OBJECT_CPU_EXAMPLE)
 	done ;
 
 clean:
-	rm *.o *_practice *.out *.txt
+	rm *.o *_exe *.out *.txt
