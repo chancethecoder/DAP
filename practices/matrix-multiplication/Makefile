@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -W -std=c99 -pg
+CFLAGS =-std=c99 -pg
 TARGET_CPU_EXAMPLE = cpu_practice_exe
 OBJECT_CPU_EXAMPLE = matrix_product_practice_cpu.o
 
