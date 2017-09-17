@@ -7,20 +7,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#define SIZE 20000
 
-int **A;
-int **B;
-int N;
+int **A, **B;
 
 void preprocess(int** A, int** B, int N);
 void matrixMultiplication(int** A, int** B, int N);
 
 int main(int argc, char* argv[]) {
-    N = (argc > 1) ? atoi(argv[1]) : SIZE;
-    printf("N: %d\n", N);
-    preprocess(A, B, N);
-    matrixMultiplication(A, B, N);
+    preprocess(A, B, atoi(argv[1]));
+    matrixMultiplication(A, B, atoi(argv[1]));
     return 0;
 }
 
@@ -34,14 +29,14 @@ int main(int argc, char* argv[]) {
  * @param   N    a length of matrix's each row/column
  */
 void preprocess(int** A, int** B, int N) {
-    A = (int **)malloc(N * sizeof(int *));
+    if((A = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
-        A[i] = (int *)malloc(N * sizeof(int *));
+        if((A[i] = (int *)malloc(N * sizeof(int *))) == NULL) exit(1);
     }
 
-    B = (int **)malloc(N * sizeof(int *));
+    if((B = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
-        B[i] = (int *)malloc(N * sizeof(int *));
+        if((B[i] = (int *)malloc(N * sizeof(int *))) == NULL) exit(1);
     }
 
     for(int i = 0; i < N; i++) {
@@ -54,7 +49,7 @@ void preprocess(int** A, int** B, int N) {
 /**
  * 행렬곱 함수.
  * 두 개의 N x N 행렬에 대해서 순서대로 행렬곱 연산을 한다.
- * Time complexity ~ O(n^2)
+ * Time complexity ~ O(n^3)
  *
  * @param   A    N x N matrix
  * @param   B    N x N matrix
@@ -63,7 +58,9 @@ void preprocess(int** A, int** B, int N) {
 void matrixMultiplication(int** A, int** B, int N) {
     for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++) {
-            A[i][j] * B[j][i];
+            for(int k = 0; k < N; k++) {
+                A[i][k] * B[k][j];
+            }
         }
     }
 }
