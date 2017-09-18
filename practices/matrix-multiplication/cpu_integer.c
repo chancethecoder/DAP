@@ -10,12 +10,12 @@
 
 int **A, **B;
 
-void preprocess(int** A, int** B, int N);
-void matrixMultiplication(int** A, int** B, int N);
+void preprocess(int N);
+void matrixMultiplication(int N);
 
 int main(int argc, char* argv[]) {
-    preprocess(A, B, atoi(argv[1]));
-    matrixMultiplication(A, B, atoi(argv[1]));
+    preprocess(atoi(argv[1]));
+    matrixMultiplication(atoi(argv[1]));
     return 0;
 }
 
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
  * @param   B    N x N matrix
  * @param   N    a length of matrix's each row/column
  */
-void preprocess(int** A, int** B, int N) {
+void preprocess(int N) {
     if((A = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
         if((A[i] = (int *)malloc(N * sizeof(int))) == NULL) exit(1);
@@ -55,7 +55,7 @@ void preprocess(int** A, int** B, int N) {
  * @param   B    N x N matrix
  * @param   N    a length of matrix's each row/column
  */
-void matrixMultiplication(int** A, int** B, int N) {
+void matrixMultiplication(int N) {
     int accumulator;
 
     for(int i = 0; i < N; i++) {
