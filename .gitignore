@@ -1,6 +1,5 @@
 *.o
 *.out
-log
-log.*
+log*
 *.exe
 *_exe
