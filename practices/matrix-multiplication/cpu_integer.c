@@ -7,15 +7,22 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+
+typedef unsigned long long timestamp_t;
 
 int **A, **B;
 
 void preprocess(int N);
 void matrixMultiplication(int N);
+timestamp_t get_timestamp();
 
 int main(int argc, char* argv[]) {
+    timestamp_t t0 = get_timestamp();
     preprocess(atoi(argv[1]));
     matrixMultiplication(atoi(argv[1]));
+    timestamp_t t1 = get_timestamp();
+    printf("Execution time: %Lf (sec)\n", (t1 - t0) / 1000000.0L);
     return 0;
 }
 
@@ -66,4 +73,10 @@ void matrixMultiplication(int N) {
             }
         }
     }
+}
+
+timestamp_t get_timestamp() {
+    struct timeval now;
+    gettimeofday (&now, NULL);
+    return now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
 }
