@@ -1,20 +1,39 @@
 #!/bin/bash
-TARGET_CPU_EXAMPLE="cpu_practice_exe"
-TIMEOUT_FLAGS="--signal=SIGKILL"
-TIMEOUT_TIME="3"
+TARGET_NAMES=("cpu_integer_exe" "cpu_float_exe")
 GPROF_OUTPUT="gmon.out"
-GPROF_LOG="log.txt"
+LOG_DIR="logs"
 
-function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
+# Make directory if not exists
+mkdir $LOG_DIR 2> /dev/null
 
-for N in {500..2000..250}
+# Read parameters
+echo "choose testcase's number (default: 1)"
+echo -n "1.cpu-integer 2.cpu-float 3.gpu-integer 4.gpu-float: "
+read TARGET_NUMBER
+TARGET_NUMBER=${TARGET_NUMBER:-1}
+TEST_CASE=${TARGET_NAMES[$TARGET_NUMBER-1]}
+
+echo -n "choose size of matrix (default: 500): "
+read SIZE
+SIZE=${SIZE:-500}
+
+echo -n "choose amout of increment of size (defalut: 500): "
+read INCREMENT
+INCREMENT=${INCREMENT:-500}
+
+echo "testcase: ${TEST_CASE}, initial size: ${SIZE}, increment size: ${INCREMENT}"
+
+while true;
 do
-    echo "start program with N: $N"
-    SIG=`timeout $TIMEOUT_TIME ./$TARGET_CPU_EXAMPLE $N || echo "0"`
-    echo "$SIG"
-    if [ "$SIG" -ne "0" ] ; then
-        echo "비정상 종료"
+    LOGFILE="$LOG_DIR/$SIZE.txt"
+    echo "start benchmark with N: $SIZE"
+    ./$TEST_CASE $SIZE
+    SIZE=$[$SIZE+$INCREMENT]
+
+    # Check if process killed and stop loop.
+    if [[ "$?" != "0" ]]; then
+        echo "Memory failed. stop benchmark."
+        break;
     fi
-    gprof -b $TARGET_CPU_EXAMPLE $GPROF_OUTPUT >> $GPROF_LOG
-    echo "\n\n\n==========================\n\n\n" >> $GPROF_LOG
+    gprof -b $TEST_CASE $GPROF_OUTPUT > $LOGFILE
 done

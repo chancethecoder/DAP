@@ -8,10 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int **A, **B;
+float **A, **B;
 
-void preprocess(int** A, int** B, int N);
-void matrixMultiplication(int** A, int** B, int N);
+void preprocess(float** A, float** B, int N);
+void matrixMultiplication(float** A, float** B, int N);
 
 int main(int argc, char* argv[]) {
     preprocess(A, B, atoi(argv[1]));
@@ -28,15 +28,15 @@ int main(int argc, char* argv[]) {
  * @param   B    N x N matrix
  * @param   N    a length of matrix's each row/column
  */
-void preprocess(int** A, int** B, int N) {
-    if((A = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
+void preprocess(float** A, float** B, int N) {
+    if((A = (float **)malloc(N * sizeof(float *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
-        if((A[i] = (int *)malloc(N * sizeof(int *))) == NULL) exit(1);
+        if((A[i] = (float *)malloc(N * sizeof(float *))) == NULL) exit(1);
     }
 
-    if((B = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
+    if((B = (float **)malloc(N * sizeof(float *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
-        if((B[i] = (int *)malloc(N * sizeof(int *))) == NULL) exit(1);
+        if((B[i] = (float *)malloc(N * sizeof(float *))) == NULL) exit(1);
     }
 
     for(int i = 0; i < N; i++) {
@@ -55,11 +55,14 @@ void preprocess(int** A, int** B, int N) {
  * @param   B    N x N matrix
  * @param   N    a length of matrix's each row/column
  */
-void matrixMultiplication(int** A, int** B, int N) {
+void matrixMultiplication(float** A, float** B, int N) {
+    float accumulator;
+
     for(int i = 0; i < N; i++) {
         for(int j = 0; j < N; j++) {
+            accumulator = 0.0f;
             for(int k = 0; k < N; k++) {
-                A[i][k] * B[k][j];
+                accumulator += A[i][k] * B[k][j];
             }
         }
     }
