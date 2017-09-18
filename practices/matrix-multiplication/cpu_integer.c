@@ -31,12 +31,12 @@ int main(int argc, char* argv[]) {
 void preprocess(int** A, int** B, int N) {
     if((A = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
-        if((A[i] = (int *)malloc(N * sizeof(int *))) == NULL) exit(1);
+        if((A[i] = (int *)malloc(N * sizeof(int))) == NULL) exit(1);
     }
 
     if((B = (int **)malloc(N * sizeof(int *))) == NULL) exit(1);
     for(int i = 0; i < N; i++) {
-        if((B[i] = (int *)malloc(N * sizeof(int *))) == NULL) exit(1);
+        if((B[i] = (int *)malloc(N * sizeof(int))) == NULL) exit(1);
     }
 
     for(int i = 0; i < N; i++) {
