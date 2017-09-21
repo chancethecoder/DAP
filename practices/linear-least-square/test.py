@@ -1,3 +1,4 @@
+# 2by2 matrix only
 # m: 90
 # n: 1
 import json
@@ -18,13 +19,44 @@ def matrixMultiplication(A, B):
 			ret[i][j] = accumulator
 	return ret
 
+def matrixDeterminant(A):
+	return A[0][0]*A[1][1] - A[0][1]*A[1][0]
+
+def matrixInverse(A):
+	determinant = matrixDeterminant(A)
+	return [
+		[A[1][1]/determinant, -1*A[0][1]/determinant],
+		[-1*A[1][0]/determinant, A[0][0]/determinant]
+	]
+
 X = [[1, x] for x in data["x"]]
 X_t = transpose(X)
-y = data["y"]
+y = [[x] for x in data["y"]]
 
 with open('output.json', 'w') as output_file:
-	sm = matrixMultiplication(X_t, X)
+	X_transByX = matrixMultiplication(X_t, X)
 	output = {
-		'sm': sm,
+		'X_transByX': X_transByX,
+	}
+	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)
+
+with open('output2.json', 'w') as output_file:
+	InverseX_transByX = matrixInverse(X_transByX)
+	output = {
+		'InverseX_transByX': InverseX_transByX,
+	}
+	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)
+
+with open('output3.json', 'w') as output_file:
+	betaHat = matrixMultiplication(matrixMultiplication(InverseX_transByX, X_t), y)
+	output = {
+		'betaHat': betaHat,
+	}
+	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)
+
+with open('output4.json', 'w') as output_file:
+	yHat = matrixMultiplication(X, betaHat)
+	output = {
+		'yHat': yHat,
 	}
 	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)

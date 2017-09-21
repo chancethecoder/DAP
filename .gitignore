@@ -1,6 +1,10 @@
 *.o
 *.out
-log*
 *.exe
 *_exe
+
+log*
+
 env
+
+output*.json
