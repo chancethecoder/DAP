@@ -48,13 +48,20 @@ with open('output2.json', 'w') as output_file:
 	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)
 
 with open('output3.json', 'w') as output_file:
-	betaHat = matrixMultiplication(matrixMultiplication(InverseX_transByX, X_t), y)
+	X_transByY = matrixMultiplication(X_t, y)
+	output = {
+		'X_transByY': X_transByY,
+	}
+	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)
+
+with open('output4.json', 'w') as output_file:
+	betaHat = matrixMultiplication(InverseX_transByX, X_transByY)
 	output = {
 		'betaHat': betaHat,
 	}
 	json.dump(output, output_file, sort_keys = True, ensure_ascii = False)
 
-with open('output4.json', 'w') as output_file:
+with open('output5.json', 'w') as output_file:
 	yHat = matrixMultiplication(X, betaHat)
 	output = {
 		'yHat': yHat,
