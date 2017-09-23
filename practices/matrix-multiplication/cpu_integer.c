@@ -7,22 +7,30 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <time.h>
+#include "timer.h"
 
-typedef unsigned long long timestamp_t;
-
-int **A, **B;
+#define DEFAULT_SIZE 1024
 
 void preprocess(int N);
 void matrixMultiplication(int N);
-timestamp_t get_timestamp();
 
-int main(int argc, char* argv[]) {
-    timestamp_t t0 = get_timestamp();
+int main(int argc, char* argv[])
+{
+    int SIZE = argc < 2 ? DEFAULT_SIZE : atoi(argv[1]);
+    float *A;
+    float *B;
+    float *C;
+
+    init_timer();
+
+    //Allocate host memory for matrices A and B
+    A = (float*) malloc(sizeof(float) * SIZE * SIZE);
+    B = (float*) malloc(sizeof(float) * SIZE * SIZE);
+    C = (float*) malloc(sizeof(float) * SIZE * SIZE);
+
     preprocess(atoi(argv[1]));
     matrixMultiplication(atoi(argv[1]));
-    timestamp_t t1 = get_timestamp();
-    printf("Execution time: %Lf (sec)\n", (t1 - t0) / 1000000.0L);
     return 0;
 }
 

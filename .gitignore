@@ -1,10 +1,1 @@
-*.o
-*.out
-*.exe
-*_exe
-
-log*
-
-env
-
-output*.json
+*.db

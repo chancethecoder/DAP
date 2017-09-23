@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -std=c99
-LIBS = 
+LIBS =
 TARGET = main
-OBJECT = main.c
+OBJECT = main.c timer.c
 OS := $(shell uname)
 
 ifeq ($(OS), Linux)

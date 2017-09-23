@@ -5,79 +5,82 @@
  * 충분히 커진 N에 대해서 메모리 or 연산 속도가 어떻게 변화하는지 관찰한다.
  */
 
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
+#include <time.h>
 #ifdef __linux__
 #include <CL/opencl.h>
 #elif __APPLE__
 #include <OpenCL/opencl.h>
 #endif
+#include "timer.h"
 
-// Use a static data size for simplicity
-//
-#define DATA_SIZE (1024)
+#define DEFAULT_SIZE 8192
 
-typedef unsigned long long timestamp_t;
-
-// Simple compute kernel which computes the square of an input array
-//
 const char *KernelSource = "\n" \
-"__kernel void square(                                                       \n" \
-"   __global float* input,                                              \n" \
-"   __global float* output,                                             \n" \
-"   const unsigned int count)                                           \n" \
-"{                                                                      \n" \
-"   int i = get_global_id(0);                                           \n" \
-"   if(i < count)                                                       \n" \
-"       output[i] = input[i] * input[i];                                \n" \
-"}                                                                      \n" \
+"__kernel void matrixMultiplication(          \n" \
+"   __global float* C,                        \n" \
+"   __global float* A,                        \n" \
+"   __global float* B,                        \n" \
+"   int wA, int wB)                           \n" \
+"{                                            \n" \
+"   int tx = get_global_id(0);                \n" \
+"   int ty = get_global_id(1);                \n" \
+"   float value = 0;                          \n" \
+"   for (int k = 0; k < wA; ++k)              \n" \
+"   {                                         \n" \
+"      float elementA = A[ty * wA + k];       \n" \
+"      float elementB = B[k * wB + tx];       \n" \
+"      value += elementA * elementB;          \n" \
+"   }                                         \n" \
+"   C[ty * wA + tx] = value;                  \n" \
+"}                                            \n" \
 "\n";
 
-////////////////////////////////////////////////////////////////////////////////
-
-timestamp_t get_timestamp() {
-    struct timeval now;
-    gettimeofday (&now, NULL);
-    return now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
-}
+void initializeComputeKernel(void);
+void destroyComputeKernel(void);
 
 int main(int argc, char** argv)
 {
-    int err;                            // error code returned from api calls
+    int err;
+    int size = argc < 2 ? DEFAULT_SIZE : atoi(argv[1]);
+    int mem_size = sizeof(float) * size * size;
+    float *A;
+    float *B;
+    float *C;
 
-    float data[DATA_SIZE];              // original data set given to device
-    float results[DATA_SIZE];           // results returned from device
-    unsigned int correct;               // number of correct results returned
+    size_t localWorkSize[2];
+    size_t globalWorkSize[2];
 
-    size_t global;                      // global domain size for our calculation
-    size_t local;                       // local domain size for our calculation
+    cl_device_id device_id;
+    cl_context context;
+    cl_command_queue commands;
+    cl_program program;
+    cl_kernel kernel;
 
-    cl_device_id device_id;             // compute device id
-    cl_context context;                 // compute context
-    cl_command_queue commands;          // compute command queue
-    cl_program program;                 // compute program
-    cl_kernel kernel;                   // compute kernel
+    cl_mem device_A;
+    cl_mem device_B;
+    cl_mem device_C;
 
-    cl_mem input;                       // device memory used for the input array
-    cl_mem output;                      // device memory used for the output array
+    init_timer();
 
-    // Fill our data set with random float values
-    //
-    int i = 0;
-    unsigned int count = DATA_SIZE;
-    for(i = 0; i < count; i++)
-        data[i] = rand() / (float)RAND_MAX;
+    //Allocate host memory for matrices A and B
+    A = (float*) malloc(mem_size);
+    B = (float*) malloc(mem_size);
+    C = (float*) malloc(mem_size);
+
+    //Initialize host memory
+    srand(time(NULL));
+    for(int i = 0; i < size * size; i++) {
+        A[i] = rand() / (float) RAND_MAX;
+        B[i] = rand() / (float) RAND_MAX;
+    }
+
+    print_time("Initializing matrix finished");
 
     // Connect to a compute device
     //
-    int gpu = 1;
+    int gpu = argc < 3 ? 1 : atoi(argv[2]);
     err = clGetDeviceIDs(NULL, gpu ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, 1, &device_id, NULL);
     if (err != CL_SUCCESS)
     {
@@ -128,103 +131,93 @@ int main(int argc, char** argv)
 
     // Create the compute kernel in the program we wish to run
     //
-    kernel = clCreateKernel(program, "square", &err);
+    kernel = clCreateKernel(program, "matrixMultiplication", &err);
     if (!kernel || err != CL_SUCCESS)
     {
         printf("Error: Failed to create compute kernel!\n");
         exit(1);
     }
 
-    // Create the input and output arrays in device memory for our calculation
-    //
-    input = clCreateBuffer(context,  CL_MEM_READ_ONLY,  sizeof(float) * count, NULL, NULL);
-    output = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * count, NULL, NULL);
-    if (!input || !output)
+    print_time("Create compute kernel finished");
+
+    device_C = clCreateBuffer(context, CL_MEM_READ_WRITE, mem_size, NULL, &err);
+    device_A = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, mem_size, A, &err);
+    device_B = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, mem_size, B, &err);
+    if (!device_A || !device_B || !device_C)
     {
         printf("Error: Failed to allocate device memory!\n");
         exit(1);
     }
 
-    // Write our data set into the input array in device memory
-    //
-    err = clEnqueueWriteBuffer(commands, input, CL_TRUE, 0, sizeof(float) * count, data, 0, NULL, NULL);
-    if (err != CL_SUCCESS)
-    {
-        printf("Error: Failed to write to source array!\n");
-        exit(1);
-    }
+    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&device_C);
+    err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&device_A);
+    err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&device_B);
+    err |= clSetKernelArg(kernel, 3, sizeof(int), (void *)&size);
+    err |= clSetKernelArg(kernel, 4, sizeof(int), (void *)&size);
 
-    // Set the arguments to our compute kernel
-    //
-    err = 0;
-    err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
-    err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &output);
-    err |= clSetKernelArg(kernel, 2, sizeof(unsigned int), &count);
     if (err != CL_SUCCESS)
     {
         printf("Error: Failed to set kernel arguments! %d\n", err);
         exit(1);
     }
 
-    // Get the maximum work group size for executing the kernel on the device
-    //
-    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
+    // CL_KERNEL_WORK_GROUP_SIZE
+    // CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE
+    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(localWorkSize[0]), &localWorkSize[0], NULL);
     if (err != CL_SUCCESS)
     {
         printf("Error: Failed to retrieve kernel work group info! %d\n", err);
         exit(1);
     }
 
-    // Execute the kernel over the entire range of our 1d input data set
-    // using the maximum number of work group items for this device
-    //
-    global = count;
-    err = clEnqueueNDRangeKernel(commands, kernel, 1, NULL, &global, &local, 0, NULL, NULL);
-    if (err)
+    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(localWorkSize[1]), &localWorkSize[1], NULL);
+    if (err != CL_SUCCESS)
     {
-        printf("Error: Failed to execute kernel!\n");
-        return EXIT_FAILURE;
+        printf("Error: Failed to retrieve kernel work group info! %d\n", err);
+        exit(1);
     }
 
-    // Start timer
-    //
-    timestamp_t t0 = get_timestamp();
+    localWorkSize[0] = ceil(localWorkSize[0] / 2);
+    localWorkSize[1] = ceil(localWorkSize[1] / 2);
+
+    globalWorkSize[0] = localWorkSize[0] * ceil(size/localWorkSize[0]);
+    globalWorkSize[1] = localWorkSize[1] * ceil(size/localWorkSize[1]);
+
+    printf("local: %d, %d\nglobal: %d, %d\n",
+      localWorkSize[0],
+      localWorkSize[1],
+      globalWorkSize[1],
+      globalWorkSize[1]);
+
+    err = clEnqueueNDRangeKernel(commands, kernel, 2, NULL, globalWorkSize, NULL,
+   0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
+        printf("Error: Failed to execute kernel! %d\n", err);
+        exit(1);
+    }
 
     // Wait for the command commands to get serviced before reading back results
     //
     clFinish(commands);
 
-    // Read back the results from the device to verify the output
-    //
-    err = clEnqueueReadBuffer( commands, output, CL_TRUE, 0, sizeof(float) * count, results, 0, NULL, NULL );
+    print_time("Command commands finished");
+
+    //Retrieve result from device
+    err = clEnqueueReadBuffer(commands, device_C, CL_TRUE, 0, mem_size, C, 0, NULL, NULL);
     if (err != CL_SUCCESS)
     {
         printf("Error: Failed to read output array! %d\n", err);
         exit(1);
     }
 
-    // Validate our results
-    //
-    correct = 0;
-    for(i = 0; i < count; i++)
-    {
-        if(results[i] == data[i] * data[i])
-            correct++;
-    }
-
-    // Print a brief summary detailing the results
-    //
-    printf("Computed '%d/%d' correct values!\n", correct, count);
-
-    // End timer
-    //
-    timestamp_t t1 = get_timestamp();
-    printf("Execution time: %Lf (sec)\n", (t1 - t0) / 1000000.0L);
+    print_time("Execution time");
 
     // Shutdown and cleanup
     //
-    clReleaseMemObject(input);
-    clReleaseMemObject(output);
+    clReleaseMemObject(device_A);
+    clReleaseMemObject(device_B);
+    clReleaseMemObject(device_C);
     clReleaseProgram(program);
     clReleaseKernel(kernel);
     clReleaseCommandQueue(commands);
