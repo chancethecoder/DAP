@@ -14,7 +14,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#ifdef __linux__
+#include <CL/opencl.h>
+#elif __APPLE__
 #include <OpenCL/opencl.h>
+#endif
 
 // Use a static data size for simplicity
 //
