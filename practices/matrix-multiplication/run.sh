@@ -1,6 +1,5 @@
 #!/bin/bash
 TARGET_NAMES=("cpu_integer_exe" "cpu_float_exe")
-GPROF_OUTPUT="gmon.out"
 LOG_DIR="logs"
 
 # Make directory if not exists
@@ -27,7 +26,7 @@ while true;
 do
     LOGFILE="$LOG_DIR/$SIZE.txt"
     echo "start benchmark with N: $SIZE"
-    ./$TEST_CASE $SIZE
+    ./$TEST_CASE $SIZE >> $LOGFILE
     SIZE=$[$SIZE+$INCREMENT]
 
     # Check if process killed and stop loop.
@@ -35,5 +34,4 @@ do
         echo "Memory failed. stop benchmark."
         break;
     fi
-    gprof -b $TEST_CASE $GPROF_OUTPUT > $LOGFILE
 done
