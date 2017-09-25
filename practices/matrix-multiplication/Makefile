@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -std=c99
-LIBS =
-TARGET = main
-OBJECT = main.c timer.c
+LIBS = -lm
+OBJECT1 = cpu_test.c timer.c
+OBJECT2 = gpu_test.c timer.c
 OS := $(shell uname)
 
 ifeq ($(OS), Linux)
@@ -12,11 +12,14 @@ ifeq ($(OS), Darwin)
 	LIBS += -framework OpenCL
 endif
 
-all: clean $(TARGET)
+all: clean cpu_test gpu_test
 
-$(TARGET): $(OBJECT)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+cpu_test: $(OBJECT1)
+	$(CC) $(CFLAGS) -o cpu_test $(OBJECT1) $(LIBS)
+
+gpu_test: $(OBJECT2)
+	$(CC) $(CFLAGS) -o gpu_test $(OBJECT2) $(LIBS)
 
 clean: FORCE
-	rm -rf *.o main *.out
+	rm -rf *.o cpu_test gpu_test *.out
 FORCE:

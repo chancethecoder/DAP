@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 #ifdef __linux__
 #include <CL/opencl.h>
@@ -15,7 +16,7 @@
 #endif
 #include "timer.h"
 
-#define DEFAULT_SIZE 8192
+#define DEFAULT_SIZE 1024
 
 const char *KernelSource = "\n" \
 "__kernel void matrixMultiplication(          \n" \
@@ -37,9 +38,6 @@ const char *KernelSource = "\n" \
 "}                                            \n" \
 "\n";
 
-void initializeComputeKernel(void);
-void destroyComputeKernel(void);
-
 int main(int argc, char** argv)
 {
     int err;
@@ -49,8 +47,8 @@ int main(int argc, char** argv)
     float *B;
     float *C;
 
-    size_t localWorkSize[2];
-    size_t globalWorkSize[2];
+    size_t local[2];
+    size_t global[2];
 
     cl_device_id device_id;
     cl_context context;
@@ -163,33 +161,33 @@ int main(int argc, char** argv)
 
     // CL_KERNEL_WORK_GROUP_SIZE
     // CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE
-    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(localWorkSize[0]), &localWorkSize[0], NULL);
+    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(local[0]), &local[0], NULL);
     if (err != CL_SUCCESS)
     {
         printf("Error: Failed to retrieve kernel work group info! %d\n", err);
         exit(1);
     }
 
-    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(localWorkSize[1]), &localWorkSize[1], NULL);
+    err = clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(local[1]), &local[1], NULL);
     if (err != CL_SUCCESS)
     {
         printf("Error: Failed to retrieve kernel work group info! %d\n", err);
         exit(1);
     }
 
-    localWorkSize[0] = ceil(localWorkSize[0] / 2);
-    localWorkSize[1] = ceil(localWorkSize[1] / 2);
+    local[0] = ceil(local[0] / 1.0f * (sizeof(local) / sizeof(size_t *)));
+    local[1] = ceil(local[1] / 1.0f * (sizeof(local) / sizeof(size_t *)));
 
-    globalWorkSize[0] = localWorkSize[0] * ceil(size/localWorkSize[0]);
-    globalWorkSize[1] = localWorkSize[1] * ceil(size/localWorkSize[1]);
+    global[0] = local[0] * ceil(size/local[0]);
+    global[1] = local[1] * ceil(size/local[1]);
 
     printf("local: %d, %d\nglobal: %d, %d\n",
-      localWorkSize[0],
-      localWorkSize[1],
-      globalWorkSize[1],
-      globalWorkSize[1]);
+      local[0],
+      local[1],
+      global[1],
+      global[1]);
 
-    err = clEnqueueNDRangeKernel(commands, kernel, 2, NULL, globalWorkSize, NULL,
+    err = clEnqueueNDRangeKernel(commands, kernel, 2, NULL, global, NULL,
    0, NULL, NULL);
     if (err != CL_SUCCESS)
     {
