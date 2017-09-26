@@ -1,6 +1,4 @@
 *.o
-*.out
-*.exe
-*_exe
 
-main
+cpu_test
+gpu_test
