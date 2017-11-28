@@ -17,8 +17,8 @@ Before running this code, make sure you have the OpenCL library installed.
 ## How to run
 
 ```
-git clone https://github.com/chancethecoder/DAP da-practice
-cd da-practice/practices/matrix-multiplication
+git clone https://github.com/chancethecoder/DAP [directory_name]
+cd [directory_name]/practices/matrix-multiplication
 make
 ./main
 ```

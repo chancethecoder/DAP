@@ -11,8 +11,8 @@ An implementation of linear least square with python.
 
 ### With virtualenv
 ```
-git clone https://github.com/chancethecoder/DAP da-practice
-cd da-practice/practices/linear-least-square
+git clone https://github.com/chancethecoder/DAP [directory_name]
+cd [directory_name]/practices/linear-least-square
 virtualenv env --python=python3
 source env/bin/activate
 python test.py
@@ -20,7 +20,7 @@ python test.py
 
 ### Without virtualenv
 ```
-git clone https://github.com/chancethecoder/DAP da-practice
-cd da-practice/practices/linear-least-square
+git clone https://github.com/chancethecoder/DAP [directory_name]
+cd [directory_name]/practices/linear-least-square
 python3 test.py
 ```
