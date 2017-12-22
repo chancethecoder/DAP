@@ -15,7 +15,7 @@ def calc_and_print(x, y):
 
 if __name__ == "__main__":
   with open('data.json') as data_file:
-	  json_file = json.load(data_file)
+    json_file = json.load(data_file)
 
   data = json_file['data']
   x = [d['x'] for d in data]
