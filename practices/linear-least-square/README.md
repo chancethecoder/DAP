@@ -2,25 +2,16 @@
 
 An implementation of linear least square with python.
 
-## Dependency
+## Requirements
 
-* python3
-* virtualenv(optional)
+* virtualenv
 
 ## How to run
 
-### With virtualenv
 ```
-git clone https://github.com/chancethecoder/DAP [directory_name]
-cd [directory_name]/practices/linear-least-square
+git clone https://github.com/chancethecoder/DAP
+cd DAP/practices/linear-least-square
 virtualenv env --python=python3
 source env/bin/activate
 python test.py
-```
-
-### Without virtualenv
-```
-git clone https://github.com/chancethecoder/DAP [directory_name]
-cd [directory_name]/practices/linear-least-square
-python3 test.py
 ```

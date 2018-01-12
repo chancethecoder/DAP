@@ -7,7 +7,7 @@ An example of matrix multiplication to compare performance before and after usin
 OS X
 * Intel Iris Plus Graphics 640  
 
-## Dependency
+## Requirements
 
 Before running this code, make sure you have the OpenCL library installed.  
 
@@ -17,8 +17,8 @@ Before running this code, make sure you have the OpenCL library installed.
 ## How to run
 
 ```
-git clone https://github.com/chancethecoder/DAP [directory_name]
-cd [directory_name]/practices/matrix-multiplication
+git clone https://github.com/chancethecoder/DAP
+cd DAP/practices/matrix-multiplication-with-OpenCL
 make
 ./main
 ```
