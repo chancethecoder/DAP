@@ -38,4 +38,4 @@ if __name__ == "__main__":
     while not SIMULATOR.is_half_chance():
         SIMULATOR.throw_coin(1)
 
-    print "%d times coin flipped to get a half chance by frequentist." % SIMULATOR.throwing_count
+    print("%d times coin flipped to get a half chance by frequentist." % (SIMULATOR.throwing_count))
