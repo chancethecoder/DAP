@@ -15,5 +15,3 @@ virtualenv env --python=python3
 source env/bin/activate
 python test.py
 ```
-
-## Frequentist vs 
