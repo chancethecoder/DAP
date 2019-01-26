@@ -4,7 +4,8 @@ An implementation of linear least square with python.
 
 ## Requirements
 
-* virtualenv
+* python 3.x
+* virtualenv (optional)
 
 ## How to run
 

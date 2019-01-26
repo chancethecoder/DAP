@@ -1,11 +1,6 @@
 # Matrix multiplication with OpenCL
 
-An example of matrix multiplication to compare performance before and after using OpenCL.  
-
-## Tested Environment
-
-OS X
-* Intel Iris Plus Graphics 640  
+An example of matrix multiplication to compare performance before and after using OpenCL.
 
 ## Requirements
 

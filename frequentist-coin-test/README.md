@@ -4,7 +4,8 @@ Test how many coin flipping is required to get a half chance approximately
 
 ## Requirements
 
-* virtualenv
+* python 3.x
+* virtualenv (optional)
 
 ## How to run
 

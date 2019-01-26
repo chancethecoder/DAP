@@ -1,12 +1,9 @@
-# DA Practices  
+# Data Analysis Practice
 
-All of my Data Analysis Practices(DAP)
+The goal of this project is to practice data analysis theory with a simple level of code.
 
-## Why do this?
+## Tested Environment
 
-- To remember longer
-- To share my good or bad idea
+OS X
 
-## Contribute
-
-My idea is likely to be wrong. So please send me a fix if you have any idea.
+* Intel Iris Plus Graphics 640
